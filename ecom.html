@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce website</title>
+</head>
+<body>
+    <form id="myForm">
+        <label>Selling price</label>
+        <input type="number" id="sell">
+        <label>Product Name</label>
+        <input type="text" id="product">
+        <button type="submit">Add product</button>
+    </form>
+    <h1>Product List</h1>
+    <ul id="prodList"></ul>
+    <div>
+        Total price of cart:<span id="total"></span>
+    </div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+<script>
+    var totalPrice=0;
+    function addProd(e){
+        e.preventDefault();
+        var sell=document.getElementById("sell").value;
+        var product=document.getElementById("product").value;
+
+        var item={
+            sell:sell,
+            product:product
+        }
+        axios.post("https://crudcrud.com/api/e105b50a79684cf88037e5de0c5bd1a6/productList",item)
+        .then(res=>{
+            console.log(res);
+        })
+        .catch(err=>{
+            console.log(err);
+        })
+        displayItem(item);
+        
+        
+        
+    }
+
+    function displayItem(item){
+        var userList=document.getElementById("prodList");
+        var listItem=document.createElement("li");
+
+        var sellSpan=document.createElement("span");
+        sellSpan.textContent="selling Price="+item.sell;
+        listItem.appendChild(sellSpan);
+
+        var productSpan=document.createElement("span");
+        productSpan.textContent="product name="+item.product;
+        listItem.appendChild(productSpan);
+
+        var deleteBtn=document.createElement("button");
+        deleteBtn.textContent="Delete product";
+        deleteBtn.addEventListener('click',()=>{
+            deleteProduct(item);
+            listItem.remove();
+           
+        })
+        
+
+        listItem.appendChild(deleteBtn);
+        userList.appendChild(listItem);
+
+        totalPrice += parseFloat(item.sell); // Increase total worth
+        updateTotal();
+
+
+    }
+
+    function deleteProduct(item){
+        axios.delete(`https://crudcrud.com/api/e105b50a79684cf88037e5de0c5bd1a6/productList/${item._id}`)
+        .then(res=>{
+            console.log(res)
+        })
+        .catch(err=>{
+            console.log(err)
+        })
+        totalPrice -= parseFloat(item.sell); // decrease total worth
+        updateTotal();
+    }
+
+    window.addEventListener('DOMContentLoaded',()=>{
+        axios.get("https://crudcrud.com/api/e105b50a79684cf88037e5de0c5bd1a6/productList")
+        .then(res=>{
+            console.log(res.data)
+
+            for(var i=0;i<res.data.length;i++){
+                displayItem(res.data[i]);
+            }
+        })
+        .catch(err=>{
+            console.log(err);
+        })
+    })
+
+    var form=document.getElementById("myForm");
+    form.addEventListener('submit',addProd);
+
+    function updateTotal() {
+        var totalElement = document.getElementById("total");
+        totalElement.textContent = totalPrice.toFixed(2); // Update the total worth value
+    }
+</script>
+</html>
